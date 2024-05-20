@@ -9,8 +9,10 @@ class NumeralConverter:
 class RomanNumeralConverter(NumeralConverter):
     _instance = None
     ROMAN_NUMERALS = {
-        'I': 1, 'V': 5, 'X': 10, 'L': 50,
-        'C': 100, 'D': 500, 'M': 1000
+        'I': 1, 'IV': 4, 'V': 5, 'IX': 9,
+        'X': 10, 'XL': 40, 'L': 50, 'XC': 90,
+        'C': 100, 'CD': 400, 'D': 500, 'CM': 900,
+        'M': 1000
     }
 
     def __new__(cls):
@@ -20,11 +22,14 @@ class RomanNumeralConverter(NumeralConverter):
 
     def to_decimal(self, roman):
         decimal = 0
-        prev_value = 0
-        for char in reversed(roman):
-            value = self.ROMAN_NUMERALS[char]
-            decimal += value if value >= prev_value else -value
-            prev_value = value
+        i = 0
+        while i < len(roman):
+            if i + 1 < len(roman) and roman[i:i+2] in self.ROMAN_NUMERALS:
+                decimal += self.ROMAN_NUMERALS[roman[i:i+2]]
+                i += 2
+            else:
+                decimal += self.ROMAN_NUMERALS[roman[i]]
+                i += 1
         return decimal
 
     def from_decimal(self, decimal):
@@ -40,13 +45,11 @@ class RomanNumeralConverter(NumeralConverter):
 
 
 class DecimalConverter(NumeralConverter):
-    def to_roman(self, decimal):
-        roman = RomanNumeralConverter().from_decimal(decimal)
-        return roman
+    def to_decimal(self, input_value):
+        return int(input_value)
 
-    def from_roman(self, roman):
-        decimal = RomanNumeralConverter().to_decimal(roman)
-        return decimal
+    def from_decimal(self, input_value):
+        return str(input_value)
 
 
 class ConverterFactory:
@@ -66,14 +69,15 @@ class UserInterface:
 
     def roman_to_decimal(self, roman_numeral):
         try:
-            decimal_number = self.converter.from_roman(roman_numeral)
+            decimal_number = self.converter.to_decimal(roman_numeral)
             print(f"Decimal representation of {roman_numeral} is {decimal_number}")
         except ValueError as e:
             print(e)
 
     def decimal_to_roman(self, decimal_number):
         try:
-            roman_numeral = self.converter.to_roman(decimal_number)
+            decimal_number = int(decimal_number)
+            roman_numeral = self.converter.from_decimal(decimal_number)
             print(f"Roman representation of {decimal_number} is {roman_numeral}")
         except ValueError as e:
             print(e)
@@ -90,7 +94,7 @@ def main():
                 roman_numeral = input("Enter Roman numeral: ")
                 ui.roman_to_decimal(roman_numeral)
             else:
-                decimal_number = int(input("Enter Decimal number: "))
+                decimal_number = input("Enter Decimal number: ")
                 ui.decimal_to_roman(decimal_number)
 
         elif choice == '0':
